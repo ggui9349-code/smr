@@ -93,7 +93,10 @@ export function useRealTimeData() {
     criticalAreas: number;
     extremeAreas: number;
     generatedAlerts: number;
+    floodedStreetsDetected: number;
+    totalAreasAfterExpansion: number;
   } | null>(null);
+  const [lastFloodedStreetsDetected, setLastFloodedStreetsDetected] = useState(0);
   const previousTideRef = useRef<number>(0);
 
   const addStationToArea = (areaId: string, stationName?: string) => {
@@ -172,6 +175,8 @@ export function useRealTimeData() {
         criticalAreas,
         extremeAreas,
         generatedAlerts: autoAlerts.length,
+        floodedStreetsDetected: lastFloodedStreetsDetected,
+        totalAreasAfterExpansion: refreshedAreas.length,
       });
 
       return refreshedAreas;
@@ -203,6 +208,7 @@ export function useRealTimeData() {
         const discoveredAreas = payload.discoveredAreas ?? [];
         const tideMeters = payload.tideMeters ?? 0;
         const generatedAt = payload.generatedAt ?? new Date().toISOString();
+        setLastFloodedStreetsDetected(discoveredAreas.length);
 
         const signalMap = buildAreaSignalMap(liveSignals);
 

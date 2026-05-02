@@ -23,6 +23,8 @@ interface OperatorViewProps {
     criticalAreas: number;
     extremeAreas: number;
     generatedAlerts: number;
+    floodedStreetsDetected: number;
+    totalAreasAfterExpansion: number;
   } | null;
   onTriggerRiskSearch: () => void;
 }

@@ -16,6 +16,8 @@ interface ContextFooterProps {
     criticalAreas: number;
     extremeAreas: number;
     generatedAlerts: number;
+    floodedStreetsDetected: number;
+    totalAreasAfterExpansion: number;
   } | null;
   onTriggerRiskSearch: () => void;
 }
@@ -327,6 +329,8 @@ function VigilanciaHidrologicaContent({
     criticalAreas: number;
     extremeAreas: number;
     generatedAlerts: number;
+    floodedStreetsDetected: number;
+    totalAreasAfterExpansion: number;
   } | null;
   onTriggerRiskSearch: () => void;
 }) {
@@ -356,9 +360,10 @@ function VigilanciaHidrologicaContent({
           <p>Última busca: {lastRiskSearchAt ? new Date(lastRiskSearchAt).toLocaleTimeString() : 'Ainda não executada'}</p>
           {riskSearchResult && (
             <>
-              <p>Áreas varridas: {riskSearchResult.scannedAreas}</p>
-              <p>Críticas: {riskSearchResult.criticalAreas}</p>
-              <p>Extremas: {riskSearchResult.extremeAreas}</p>
+              <p>Ruas alagadas detectadas (PE): {riskSearchResult.floodedStreetsDetected}</p>
+              <p>Total de áreas no mapa (após expansão): {riskSearchResult.totalAreasAfterExpansion}</p>
+              <p>Áreas críticas: {riskSearchResult.criticalAreas}</p>
+              <p>Áreas extremas: {riskSearchResult.extremeAreas}</p>
               <p>Alertas gerados: {riskSearchResult.generatedAlerts}</p>
             </>
           )}
