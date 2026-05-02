@@ -9,11 +9,28 @@ interface ContextFooterProps {
   area: MonitoringArea;
   isLiveConnected: boolean;
   onAddStation: (areaId: string, stationName?: string) => void;
+  isSearchingRiskAreas: boolean;
+  lastRiskSearchAt: string | null;
+  riskSearchResult: {
+    scannedAreas: number;
+    criticalAreas: number;
+    extremeAreas: number;
+    generatedAlerts: number;
+  } | null;
+  onTriggerRiskSearch: () => void;
 }
 
-type FooterTab = 'Clima' | 'Previsão' | 'Ações' | 'Infraestrutura' | 'Comunidade' | 'Radar';
+type FooterTab = 'Clima' | 'Previsão' | 'Ações' | 'Infraestrutura' | 'Comunidade' | 'Radar' | 'Vigilância Hidrológica';
 
-export function ContextFooter({ area, isLiveConnected, onAddStation }: ContextFooterProps) {
+export function ContextFooter({
+  area,
+  isLiveConnected,
+  onAddStation,
+  isSearchingRiskAreas,
+  lastRiskSearchAt,
+  riskSearchResult,
+  onTriggerRiskSearch,
+}: ContextFooterProps) {
   const [activeTab, setActiveTab] = useState<FooterTab>('Previsão');
   const [isMinimized, setIsMinimized] = useState(false);
   const [isTabPinned, setIsTabPinned] = useState(false);
@@ -36,6 +53,7 @@ export function ContextFooter({ area, isLiveConnected, onAddStation }: ContextFo
     { id: 'Infraestrutura', icon: <Building2 className="h-4 w-4" /> },
     { id: 'Comunidade', icon: <Users className="h-4 w-4" /> },
     { id: 'Radar', icon: <Radio className="h-4 w-4" /> },
+    { id: 'Vigilância Hidrológica', icon: <Activity className="h-4 w-4" /> },
   ];
 
   return (
@@ -104,6 +122,15 @@ export function ContextFooter({ area, isLiveConnected, onAddStation }: ContextFo
                {activeTab === 'Infraestrutura' && <InfraContent area={area} onAddStation={onAddStation} />}
                {activeTab === 'Comunidade' && <ComunidadeContent />}
                {activeTab === 'Radar' && <RadarContent area={area} isLiveConnected={isLiveConnected} />}
+               {activeTab === 'Vigilância Hidrológica' && (
+                 <VigilanciaHidrologicaContent
+                   area={area}
+                   isSearchingRiskAreas={isSearchingRiskAreas}
+                   lastRiskSearchAt={lastRiskSearchAt}
+                   riskSearchResult={riskSearchResult}
+                   onTriggerRiskSearch={onTriggerRiskSearch}
+                 />
+               )}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -281,6 +308,80 @@ function ComunidadeContent() {
             </div>
          </div>
        ))}
+    </div>
+  );
+}
+
+function VigilanciaHidrologicaContent({
+  area,
+  isSearchingRiskAreas,
+  lastRiskSearchAt,
+  riskSearchResult,
+  onTriggerRiskSearch,
+}: {
+  area: MonitoringArea;
+  isSearchingRiskAreas: boolean;
+  lastRiskSearchAt: string | null;
+  riskSearchResult: {
+    scannedAreas: number;
+    criticalAreas: number;
+    extremeAreas: number;
+    generatedAlerts: number;
+  } | null;
+  onTriggerRiskSearch: () => void;
+}) {
+  const floodingEvents = area.history.filter((event) => {
+    const normalized = `${event.type} ${event.description}`.toLowerCase();
+    return normalized.includes('alag') || normalized.includes('inund');
+  });
+
+  return (
+    <div className="grid h-full grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="md:col-span-1 rounded-2xl border border-white/10 bg-black/20 p-4">
+        <h4 className="text-[10px] font-black uppercase tracking-widest text-blue-300">Varredura operacional</h4>
+        <button
+          onClick={onTriggerRiskSearch}
+          disabled={isSearchingRiskAreas}
+          className={cn(
+            "mt-4 w-full rounded-lg px-3 py-2 text-[10px] font-black uppercase tracking-widest transition-colors",
+            isSearchingRiskAreas
+              ? "cursor-not-allowed bg-gray-600 text-gray-200"
+              : "bg-blue-600 text-white hover:bg-blue-500"
+          )}
+        >
+          {isSearchingRiskAreas ? 'Buscando...' : 'Busca'}
+        </button>
+
+        <div className="mt-4 space-y-1 text-[10px] font-bold text-gray-300">
+          <p>Última busca: {lastRiskSearchAt ? new Date(lastRiskSearchAt).toLocaleTimeString() : 'Ainda não executada'}</p>
+          {riskSearchResult && (
+            <>
+              <p>Áreas varridas: {riskSearchResult.scannedAreas}</p>
+              <p>Críticas: {riskSearchResult.criticalAreas}</p>
+              <p>Extremas: {riskSearchResult.extremeAreas}</p>
+              <p>Alertas gerados: {riskSearchResult.generatedAlerts}</p>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="md:col-span-2 rounded-2xl border border-white/10 bg-black/20 p-4">
+        <h4 className="text-[10px] font-black uppercase tracking-widest text-amber-300">Histórico de alagamentos</h4>
+        <div className="mt-3 h-[120px] overflow-y-auto pr-1">
+          {floodingEvents.length ? (
+            <div className="space-y-2">
+              {floodingEvents.map((event, index) => (
+                <div key={`${event.time}-${index}`} className="rounded-lg border border-amber-400/20 bg-amber-500/10 p-2">
+                  <p className="text-[9px] font-black uppercase tracking-wider text-amber-300">{event.time}</p>
+                  <p className="text-[10px] font-bold text-white">{event.description}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-[10px] font-bold text-gray-400">Sem ocorrências históricas de alagamento para esta área.</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

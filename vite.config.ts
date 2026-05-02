@@ -8,46 +8,71 @@ const STREAM_PATH = '/api/realtime-signals';
 const AI_SEARCH_PATH = '/api/ai-citizen-search';
 const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
-async function fetchRealtimeObservation(previousRainMmPerHour = 0, liveObservationApiUrl?: string) {
-  if (!liveObservationApiUrl) {
-    throw new Error('LIVE_OBSERVATION_API_URL não configurada');
+async function fetchRealtimeObservation(previousRainMmPerHour = 0, geminiApiKey?: string) {
+  if (!geminiApiKey) {
+    throw new Error('GEMINI_API_KEY não configurada');
   }
 
-  const response = await fetch(liveObservationApiUrl);
-  if (!response.ok) {
-    throw new Error('Falha ao consultar API ao vivo');
+  const geminiResponse = await fetch(`${GEMINI_ENDPOINT}?key=${geminiApiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [
+        {
+          parts: [
+            {
+              text: `Retorne APENAS JSON válido com os campos observedRainMmPerHour (número >=0), trend (rising|stable|falling) e confidence (0-100). Valor anterior de chuva: ${previousRainMmPerHour}.`,
+            },
+          ],
+        },
+      ],
+      generationConfig: {
+        temperature: 0.2,
+      },
+    }),
+  });
+
+  if (!geminiResponse.ok) {
+    throw new Error('Falha ao consultar Gemini para sinal ao vivo');
   }
 
-  const payload = (await response.json()) as {
-    current?: {
-      rain?: number;
-    };
-    rain?: number;
-    rainMmPerHour?: number;
-    observedRainMmPerHour?: number;
+  const geminiPayload = (await geminiResponse.json()) as {
+    candidates?: Array<{
+      content?: {
+        parts?: Array<{ text?: string }>;
+      };
+    }>;
   };
 
-  const rainFromApi =
-    payload.observedRainMmPerHour ??
-    payload.rainMmPerHour ??
-    payload.rain ??
-    payload.current?.rain ??
-    0;
+  const rawText = geminiPayload.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? '{}';
+  const normalizedText = rawText.replace(/^```json\s*/i, '').replace(/^```/i, '').replace(/```$/, '').trim();
+  const parsed = JSON.parse(normalizedText) as {
+    observedRainMmPerHour?: number;
+    trend?: 'rising' | 'stable' | 'falling';
+    confidence?: number;
+  };
 
-  const observedRainMmPerHour = Math.max(0, Number(rainFromApi));
-  const diff = observedRainMmPerHour - previousRainMmPerHour;
-  const trend: 'rising' | 'stable' | 'falling' = diff > 0.2 ? 'rising' : diff < -0.2 ? 'falling' : 'stable';
+  const observedRainMmPerHour = Math.max(0, Number(parsed.observedRainMmPerHour ?? previousRainMmPerHour ?? 0));
+  const trend = parsed.trend === 'rising' || parsed.trend === 'falling' || parsed.trend === 'stable'
+    ? parsed.trend
+    : observedRainMmPerHour > previousRainMmPerHour
+      ? 'rising'
+      : observedRainMmPerHour < previousRainMmPerHour
+        ? 'falling'
+        : 'stable';
+
+  const confidence = Math.max(0, Math.min(100, Number(parsed.confidence ?? 100)));
 
   return {
     observedRainMmPerHour,
     trend,
-    confidence: 82,
+    confidence,
   };
 }
 
 export default defineConfig(async ({mode}) => {
   const env = loadEnv(mode, '.', '');
-  const liveObservationApiUrl = env.LIVE_OBSERVATION_API_URL;
+  const geminiApiKey = env.GEMINI_API_KEY;
   const { INITIAL_AREAS } = await import('./src/data/initialAreas');
 
   return {
@@ -136,7 +161,7 @@ export default defineConfig(async ({mode}) => {
 
             const emit = async () => {
               try {
-                const observation = await fetchRealtimeObservation(previousRainMmPerHour, liveObservationApiUrl);
+                const observation = await fetchRealtimeObservation(previousRainMmPerHour, geminiApiKey);
                 previousRainMmPerHour = observation.observedRainMmPerHour;
                 const payload = buildLiveSignalPayload(INITIAL_AREAS, observation);
                 res.write(`data: ${JSON.stringify(payload)}\n\n`);
@@ -153,7 +178,7 @@ export default defineConfig(async ({mode}) => {
             void emit();
             const timer = setInterval(() => {
               void emit();
-            }, 3000);
+            }, 60 * 60 * 1000);
 
             req.on('close', () => {
               clearInterval(timer);

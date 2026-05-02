@@ -16,6 +16,15 @@ interface OperatorViewProps {
   globalRiskScore: number;
   isLiveConnected: boolean;
   onAddStation: (areaId: string, stationName?: string) => void;
+  isSearchingRiskAreas: boolean;
+  lastRiskSearchAt: string | null;
+  riskSearchResult: {
+    scannedAreas: number;
+    criticalAreas: number;
+    extremeAreas: number;
+    generatedAlerts: number;
+  } | null;
+  onTriggerRiskSearch: () => void;
 }
 
 export function OperatorView({
@@ -24,6 +33,10 @@ export function OperatorView({
   globalStatus,
   isLiveConnected,
   onAddStation,
+  isSearchingRiskAreas,
+  lastRiskSearchAt,
+  riskSearchResult,
+  onTriggerRiskSearch,
 }: OperatorViewProps) {
   const [selectedAreaId, setSelectedAreaId] = useState<string>(areas[0]?.id ?? '');
   const [focusNonce, setFocusNonce] = useState(0);
@@ -112,6 +125,10 @@ export function OperatorView({
         area={selectedArea}
         isLiveConnected={isLiveConnected}
         onAddStation={onAddStation}
+        isSearchingRiskAreas={isSearchingRiskAreas}
+        lastRiskSearchAt={lastRiskSearchAt}
+        riskSearchResult={riskSearchResult}
+        onTriggerRiskSearch={onTriggerRiskSearch}
       />
     </div>
   );

@@ -86,6 +86,14 @@ export function useRealTimeData() {
   const eventSourceRef = useRef<EventSource | null>(null);
   const [isLiveConnected, setIsLiveConnected] = useState(false);
   const [lastSnapshotAt, setLastSnapshotAt] = useState<string>(new Date().toISOString());
+  const [isSearchingRiskAreas, setIsSearchingRiskAreas] = useState(false);
+  const [lastRiskSearchAt, setLastRiskSearchAt] = useState<string | null>(null);
+  const [riskSearchResult, setRiskSearchResult] = useState<{
+    scannedAreas: number;
+    criticalAreas: number;
+    extremeAreas: number;
+    generatedAlerts: number;
+  } | null>(null);
   const previousTideRef = useRef<number>(0);
 
   const addStationToArea = (areaId: string, stationName?: string) => {
@@ -125,6 +133,52 @@ export function useRealTimeData() {
       return rank[area.riskLevel] > rank[highest] ? area.riskLevel : highest;
     }, RiskLevel.SAFE);
   }, [areas]);
+
+  const triggerRiskSearch = () => {
+    setIsSearchingRiskAreas(true);
+
+    setAreas((prev) => {
+      const refreshedAreas = prev.map((area) =>
+        applySignal(
+          {
+            ...area,
+            lastUpdate: new Date().toISOString(),
+          },
+          {
+            rainMmPerHour: area.rainIntensity,
+            trend: area.trend,
+            momentum: area.momentum,
+            confidence: 100,
+          },
+          decisionMode
+        )
+      );
+
+      const autoAlerts = buildAutomatedAlerts(refreshedAreas, true);
+      setAlerts(autoAlerts);
+
+      const averageRisk = refreshedAreas.length
+        ? refreshedAreas.reduce((sum, area) => sum + area.operationalPriority, 0) / refreshedAreas.length
+        : 0;
+
+      setGlobalRiskScore(Math.round(averageRisk));
+
+      const criticalAreas = refreshedAreas.filter((area) => area.riskLevel === RiskLevel.CRITICAL).length;
+      const extremeAreas = refreshedAreas.filter((area) => area.riskLevel === RiskLevel.EXTREME).length;
+
+      setLastRiskSearchAt(new Date().toISOString());
+      setRiskSearchResult({
+        scannedAreas: refreshedAreas.length,
+        criticalAreas,
+        extremeAreas,
+        generatedAlerts: autoAlerts.length,
+      });
+
+      return refreshedAreas;
+    });
+
+    setIsSearchingRiskAreas(false);
+  };
 
   const confidence = useMemo(() => 100, []);
 
@@ -223,5 +277,9 @@ export function useRealTimeData() {
     decisionMode,
     setDecisionMode,
     addStationToArea,
+    isSearchingRiskAreas,
+    lastRiskSearchAt,
+    riskSearchResult,
+    triggerRiskSearch,
   };
 }

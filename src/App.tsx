@@ -18,8 +18,11 @@ export default function App() {
     decisionMode,
     setDecisionMode,
     addStationToArea,
+    isSearchingRiskAreas,
+    lastRiskSearchAt,
+    riskSearchResult,
+    triggerRiskSearch,
   } = useRealTimeData();
-
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-[#0B1220] text-white">
       <Header
@@ -46,8 +49,11 @@ export default function App() {
           globalRiskScore={globalRiskScore}
           isLiveConnected={isLiveConnected}
           onAddStation={addStationToArea}
-        />
-      )}
+          isSearchingRiskAreas={isSearchingRiskAreas}
+          lastRiskSearchAt={lastRiskSearchAt}
+          riskSearchResult={riskSearchResult}
+          onTriggerRiskSearch={triggerRiskSearch}
+        />      )}
     </div>
   );
 }
