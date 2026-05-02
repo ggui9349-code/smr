@@ -119,7 +119,7 @@ function OverviewTab({ area }: { area: MonitoringArea }) {
        <div className="grid grid-cols-2 gap-6">
           <div>
              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Status</p>
-             <p className="text-sm font-black">{area.riskLevel.toUpperCase()}</p>
+             <p className="text-sm font-black">{translateRiskLevel(area.riskLevel)}</p>
           </div>
           <div className="text-right">
              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Nível Atual</p>
@@ -366,5 +366,22 @@ function translateEventType(type: 'alert' | 'warning' | 'trend'): string {
       return 'ATENÇÃO';
     default:
       return 'TENDÊNCIA';
+  }
+}
+
+function translateRiskLevel(level: RiskLevel): string {
+  switch (level) {
+    case RiskLevel.SAFE:
+      return 'NORMAL';
+    case RiskLevel.ATTENTION:
+      return 'ATENÇÃO';
+    case RiskLevel.HIGH:
+      return 'ALTO';
+    case RiskLevel.CRITICAL:
+      return 'CRÍTICO';
+    case RiskLevel.EXTREME:
+      return 'EXTREMO';
+    default:
+      return 'INDEFINIDO';
   }
 }

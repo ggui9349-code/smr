@@ -8,6 +8,12 @@ interface DetailModalProps {
   onClose: () => void;
 }
 
+function translateTrend(trend: 'rising' | 'stable' | 'falling') {
+  if (trend === 'rising') return 'SUBINDO';
+  if (trend === 'stable') return 'ESTÁVEL';
+  return 'CAINDO';
+}
+
 export function DetailModal({ area, onClose }: DetailModalProps) {
   if (!area) return null;
 
@@ -42,7 +48,7 @@ export function DetailModal({ area, onClose }: DetailModalProps) {
                  </span>
                  <span className="flex items-center gap-1 text-xs font-bold uppercase">
                    <TrendingUp className="h-3 w-3" />
-                   {area.trend.toUpperCase()}
+                   {translateTrend(area.trend)}
                  </span>
               </div>
             </div>
@@ -134,17 +140,17 @@ export function DetailModal({ area, onClose }: DetailModalProps) {
                    <div className="flex flex-col items-center justify-center rounded-2xl bg-gray-50 p-3 border border-gray-100">
                       <Building2 className="h-4 w-4 text-emerald-500 mb-1" />
                       <span className="text-xs font-black text-[#1a3a52]">{area.urbanImpact.hospitals}</span>
-                      <span className="text-[8px] font-bold text-gray-400 uppercase">Hospitals</span>
+                      <span className="text-[8px] font-bold text-gray-400 uppercase">Hospitais</span>
                    </div>
                    <div className="flex flex-col items-center justify-center rounded-2xl bg-gray-50 p-3 border border-gray-100">
                       <CarFront className="h-4 w-4 text-amber-500 mb-1" />
-                      <span className="text-xs font-black text-[#1a3a52]">{area.urbanImpact.blockedRoads.length}</span>
-                      <span className="text-[8px] font-bold text-gray-400 uppercase">Roads</span>
+                      <span className="text-xs font-black text-[#1a3a52]">{area.urbanImpact.blockedVias.length}</span>
+                      <span className="text-[8px] font-bold text-gray-400 uppercase">Vias</span>
                    </div>
                 </div>
-                {area.urbanImpact.blockedRoads.length > 0 && (
+                {area.urbanImpact.blockedVias.length > 0 && (
                   <div className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-100 italic text-[10px] text-amber-700">
-                    Blocked: {area.urbanImpact.blockedRoads.join(', ')}
+                    Bloqueadas: {area.urbanImpact.blockedVias.join(', ')}
                   </div>
                 )}
               </div>
@@ -153,12 +159,12 @@ export function DetailModal({ area, onClose }: DetailModalProps) {
                 <div>
                   <p className="text-[10px] font-bold uppercase opacity-60 flex items-center gap-2">
                     <Activity className="h-3 w-3" />
-                    Trust Engine
+                    Motor de Confiança
                   </p>
-                  <p className="text-2xl font-bold">{area.trustScore}% <span className="text-xs font-normal">Confidence</span></p>
+                  <p className="text-2xl font-bold">{area.trustScore}% <span className="text-xs font-normal">Confiança</span></p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-bold uppercase opacity-60">Priority Rank</p>
+                  <p className="text-[10px] font-bold uppercase opacity-60">Prioridade</p>
                   <p className="text-sm font-bold">TOP {area.operationalPriority > 90 ? '1' : area.operationalPriority > 50 ? '3' : '5'}</p>
                 </div>
               </div>
@@ -170,10 +176,10 @@ export function DetailModal({ area, onClose }: DetailModalProps) {
               onClick={onClose}
               className="rounded-xl px-6 py-2.5 text-sm font-bold text-[#1a3a52] hover:bg-gray-100 transition-colors"
              >
-               Dismiss Analysis
+               Fechar Análise
              </button>
              <button className="ml-3 rounded-xl bg-[#1a3a52] px-6 py-2.5 text-sm font-bold text-white shadow-lg hover:shadow-xl transition-all">
-               Dispatch Emergency Team
+               Acionar Equipe de Emergência
              </button>
           </div>
         </motion.div>

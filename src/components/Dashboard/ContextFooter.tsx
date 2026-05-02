@@ -310,7 +310,7 @@ function RadarContent({ area, isLiveConnected }: { area: MonitoringArea; isLiveC
              <p className="text-xs font-bold text-gray-500">→ {plus2h.toFixed(1)} mm/h (+2h)</p>
           </div>
           <div className="space-y-1 border-t border-white/5 pt-2">
-            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Tendência: {area.trend}</p>
+            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Tendência: {translateTrendPt(area.trend)}</p>
             <p className="text-[9px] font-black uppercase tracking-widest text-gray-500">Confiança: {area.confidence.toFixed(1)}%</p>
           </div>
           <p className="text-[8px] font-black uppercase text-gray-600 tracking-widest">FONTE: SINAIS OPERACIONAIS SIMA</p>
@@ -353,4 +353,10 @@ function PendingAction({ label, status }: { label: string, status: string }) {
         <span className="text-[8px] font-black text-amber-500/60 uppercase">{status}</span>
      </div>
   );
+}
+
+function translateTrendPt(trend: 'rising' | 'stable' | 'falling') {
+  if (trend === 'rising') return 'SUBINDO';
+  if (trend === 'stable') return 'ESTÁVEL';
+  return 'CAINDO';
 }
