@@ -1,0 +1,13 @@
+{
+  "name": "SIMA-RMR — Intelligent Flood Monitoring",
+  "description": "Tactical decision-support system (SIMA-RMR) for flood monitoring, featuring OPS Engine priority ranking, Urban Impact mapping, and multi-channel Alert Orchestration.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "Real-time monitoring",
+    "Interactive risk mapping",
+    "Emergency alert system",
+    "Community reporting"
+  ]
+}

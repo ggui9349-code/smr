@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C \"c:/Users/Guilherme/Downloads/mapeamento de risco\" rev-parse --is-inside-work-tree)",
+      "Bash(git -C \"c:/Users/Guilherme/Downloads/mapeamento de risco/visual exemplo/sima-rmr-—-intelligent-flood-monitoring\" rev-parse --is-inside-work-tree)",
+      "Bash(powershell -NoProfile -Command \"Compress-Archive -Path 'c:/Users/Guilherme/Downloads/mapeamento de risco/visual exemplo/sima-rmr-—-intelligent-flood-monitoring/*' -DestinationPath 'c:/Users/Guilherme/Downloads/mapeamento de risco/visual exemplo/sima-rmr-backup-2026-05-02.zip' -Force\")",
+      "Bash(npm install *)",
+      "PowerShell($path='c:/Users/Guilherme/Downloads/mapeamento de risco/Paulista/Paulista/Rua 7 Setembro.kmz'; Add-Type -AssemblyName System.IO.Compression.FileSystem; $zip=[System.IO.Compression.ZipFile]::OpenRead\\($path\\); $entry=$zip.Entries | Select-Object -First 1; $reader=New-Object System.IO.StreamReader\\($entry.Open\\(\\)\\); $kml=$reader.ReadToEnd\\(\\); $reader.Dispose\\(\\); $zip.Dispose\\(\\); $kml.Substring\\(0,[Math]::Min\\(4000,$kml.Length\\)\\))"
+    ]
+  }
+}
