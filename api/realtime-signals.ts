@@ -25,7 +25,19 @@ async function fetchRealtimeObservation(previousRainMmPerHour = 0) {
         {
           parts: [
             {
-              text: `Retorne APENAS JSON válido com os campos observedRainMmPerHour (número >=0), trend (rising|stable|falling) e confidence (0-100). Valor anterior de chuva: ${previousRainMmPerHour}.`,
+              text: `Retorne APENAS JSON válido para monitoramento hidrológico de TODO o estado de Pernambuco (não limitar às áreas atuais).
+Campos obrigatórios:
+- observedRainMmPerHour (número >= 0)
+- trend (rising|stable|falling)
+- confidence (0-100)
+- floodedStreets (array)
+Cada item de floodedStreets deve conter:
+- street (nome da rua)
+- municipality (município de Pernambuco)
+- coordinates ([latitude, longitude])
+- severity (attention|high|critical|extreme)
+Se não houver rua alagada agora, retorne floodedStreets: [].
+Valor anterior de chuva: ${previousRainMmPerHour}.`,
             },
           ],
         },
@@ -54,6 +66,12 @@ async function fetchRealtimeObservation(previousRainMmPerHour = 0) {
     observedRainMmPerHour?: number;
     trend?: 'rising' | 'stable' | 'falling';
     confidence?: number;
+    floodedStreets?: Array<{
+      street?: string;
+      municipality?: string;
+      coordinates?: [number, number];
+      severity?: 'attention' | 'high' | 'critical' | 'extreme';
+    }>;
   };
 
   const observedRainMmPerHour = Math.max(0, Number(parsed.observedRainMmPerHour ?? previousRainMmPerHour ?? 0));
@@ -67,10 +85,26 @@ async function fetchRealtimeObservation(previousRainMmPerHour = 0) {
 
   const confidence = Math.max(0, Math.min(100, Number(parsed.confidence ?? 100)));
 
+  const floodedStreets = (parsed.floodedStreets ?? [])
+    .filter((street) => street.street && street.municipality && Array.isArray(street.coordinates) && street.coordinates.length === 2)
+    .map((street) => ({
+      street: String(street.street),
+      municipality: String(street.municipality),
+      coordinates: [Number(street.coordinates![0]), Number(street.coordinates![1])] as [number, number],
+      severity:
+        street.severity === 'attention' ||
+        street.severity === 'high' ||
+        street.severity === 'critical' ||
+        street.severity === 'extreme'
+          ? street.severity
+          : 'attention',
+    }));
+
   return {
     observedRainMmPerHour,
     trend,
     confidence,
+    floodedStreets,
   };
 }
 
