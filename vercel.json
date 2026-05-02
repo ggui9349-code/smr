@@ -1,7 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
-  "installCommand": "npm --prefix \"visual exemplo/sima-rmr-—-intelligent-flood-monitoring\" install",
-  "buildCommand": "npm --prefix \"visual exemplo/sima-rmr-—-intelligent-flood-monitoring\" run build",
-  "outputDirectory": "visual exemplo/sima-rmr-—-intelligent-flood-monitoring/dist"
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist"
 }
