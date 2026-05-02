@@ -88,15 +88,16 @@ export function useRealTimeData() {
   const [lastSnapshotAt, setLastSnapshotAt] = useState<string>(new Date().toISOString());
   const previousTideRef = useRef<number>(0);
 
-  const addStationToArea = (areaId: string) => {
+  const addStationToArea = (areaId: string, stationName?: string) => {
     setAreas((prev) =>
       prev.map((area) => {
         if (area.id !== areaId) return area;
 
         const nextIndex = area.stations.length + 1;
+        const sanitizedName = stationName?.trim();
         const newStation = {
           id: `${area.id}-st-${Date.now()}`,
-          name: `Estação ${nextIndex}`,
+          name: sanitizedName && sanitizedName.length > 0 ? sanitizedName : `Estação ${nextIndex}`,
           capacity: 100,
           currentUsage: 0,
           status: 'online' as const,

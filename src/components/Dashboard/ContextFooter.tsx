@@ -1,4 +1,4 @@
-import { useState, useEffect, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode, type FormEvent } from 'react';
 import { type MonitoringArea, RiskLevel } from '../../types';
 import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
@@ -8,7 +8,7 @@ import { LineChart, Line, ResponsiveContainer, YAxis, XAxis, Tooltip } from 'rec
 interface ContextFooterProps {
   area: MonitoringArea;
   isLiveConnected: boolean;
-  onAddStation: (areaId: string) => void;
+  onAddStation: (areaId: string, stationName?: string) => void;
 }
 
 type FooterTab = 'Clima' | 'Previsão' | 'Ações' | 'Infraestrutura' | 'Comunidade' | 'Radar';
@@ -217,7 +217,15 @@ function AcoesContent({ area }: { area: MonitoringArea }) {
   );
 }
 
-function InfraContent({ area, onAddStation }: { area: MonitoringArea; onAddStation: (areaId: string) => void }) {
+function InfraContent({ area, onAddStation }: { area: MonitoringArea; onAddStation: (areaId: string, stationName?: string) => void }) {
+  const [newStationName, setNewStationName] = useState('');
+
+  const handleAddStation = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onAddStation(area.id, newStationName);
+    setNewStationName('');
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
        {area.stations.map(st => (
@@ -232,14 +240,27 @@ function InfraContent({ area, onAddStation }: { area: MonitoringArea; onAddStati
             </div>
          </div>
        ))}
-       <button
-         type="button"
-         onClick={() => onAddStation(area.id)}
-         className="flex flex-col justify-center items-center rounded-2xl border-2 border-dashed border-white/10 opacity-40 hover:opacity-100 cursor-pointer transition-all"
+       <form
+         onSubmit={handleAddStation}
+         className="flex flex-col justify-center gap-2 rounded-2xl border-2 border-dashed border-white/10 p-3 transition-all"
        >
-          <Activity className="h-4 w-4 mb-1" />
-          <span className="text-[8px] font-black uppercase">Adicionar Estação</span>
-       </button>
+          <div className="flex items-center justify-center opacity-70">
+            <Activity className="h-4 w-4" />
+          </div>
+          <input
+            type="text"
+            value={newStationName}
+            onChange={(event) => setNewStationName(event.target.value)}
+            placeholder="Nome da estação"
+            className="w-full rounded-lg border border-white/10 bg-black/20 px-2 py-1 text-[10px] font-bold text-white placeholder:text-gray-500 outline-none focus:border-blue-400/60"
+          />
+          <button
+            type="submit"
+            className="rounded-lg bg-blue-600 px-2 py-1 text-[9px] font-black uppercase tracking-wide text-white hover:bg-blue-500"
+          >
+            Adicionar Estação
+          </button>
+       </form>
     </div>
   );
 }

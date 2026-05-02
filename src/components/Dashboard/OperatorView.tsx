@@ -15,7 +15,7 @@ interface OperatorViewProps {
   confidence: number;
   globalRiskScore: number;
   isLiveConnected: boolean;
-  onAddStation: (areaId: string) => void;
+  onAddStation: (areaId: string, stationName?: string) => void;
 }
 
 export function OperatorView({
