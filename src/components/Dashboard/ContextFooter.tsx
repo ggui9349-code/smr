@@ -8,11 +8,12 @@ import { LineChart, Line, ResponsiveContainer, YAxis, XAxis, Tooltip } from 'rec
 interface ContextFooterProps {
   area: MonitoringArea;
   isLiveConnected: boolean;
+  onAddStation: (areaId: string) => void;
 }
 
 type FooterTab = 'Clima' | 'Previsão' | 'Ações' | 'Infraestrutura' | 'Comunidade' | 'Radar';
 
-export function ContextFooter({ area, isLiveConnected }: ContextFooterProps) {
+export function ContextFooter({ area, isLiveConnected, onAddStation }: ContextFooterProps) {
   const [activeTab, setActiveTab] = useState<FooterTab>('Previsão');
   const [isMinimized, setIsMinimized] = useState(false);
   const [isTabPinned, setIsTabPinned] = useState(false);
@@ -100,7 +101,7 @@ export function ContextFooter({ area, isLiveConnected }: ContextFooterProps) {
                {activeTab === 'Clima' && <ClimaContent />}
                {activeTab === 'Previsão' && <PrevisaoContent area={area} isLiveConnected={isLiveConnected} />}
                {activeTab === 'Ações' && <AcoesContent area={area} />}
-               {activeTab === 'Infraestrutura' && <InfraContent area={area} />}
+               {activeTab === 'Infraestrutura' && <InfraContent area={area} onAddStation={onAddStation} />}
                {activeTab === 'Comunidade' && <ComunidadeContent />}
                {activeTab === 'Radar' && <RadarContent area={area} isLiveConnected={isLiveConnected} />}
             </motion.div>
@@ -216,7 +217,7 @@ function AcoesContent({ area }: { area: MonitoringArea }) {
   );
 }
 
-function InfraContent({ area }: { area: MonitoringArea }) {
+function InfraContent({ area, onAddStation }: { area: MonitoringArea; onAddStation: (areaId: string) => void }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
        {area.stations.map(st => (
@@ -231,10 +232,14 @@ function InfraContent({ area }: { area: MonitoringArea }) {
             </div>
          </div>
        ))}
-       <div className="flex flex-col justify-center items-center rounded-2xl border-2 border-dashed border-white/10 opacity-40 hover:opacity-100 cursor-pointer transition-all">
+       <button
+         type="button"
+         onClick={() => onAddStation(area.id)}
+         className="flex flex-col justify-center items-center rounded-2xl border-2 border-dashed border-white/10 opacity-40 hover:opacity-100 cursor-pointer transition-all"
+       >
           <Activity className="h-4 w-4 mb-1" />
           <span className="text-[8px] font-black uppercase">Adicionar Estação</span>
-       </div>
+       </button>
     </div>
   );
 }

@@ -15,6 +15,7 @@ interface OperatorViewProps {
   confidence: number;
   globalRiskScore: number;
   isLiveConnected: boolean;
+  onAddStation: (areaId: string) => void;
 }
 
 export function OperatorView({
@@ -22,6 +23,7 @@ export function OperatorView({
   alerts,
   globalStatus,
   isLiveConnected,
+  onAddStation,
 }: OperatorViewProps) {
   const [selectedAreaId, setSelectedAreaId] = useState<string>(areas[0]?.id ?? '');
   const [focusNonce, setFocusNonce] = useState(0);
@@ -106,7 +108,11 @@ export function OperatorView({
       </div>
 
       {/* Footer Contextual */}
-      <ContextFooter area={selectedArea} isLiveConnected={isLiveConnected} />
+      <ContextFooter
+        area={selectedArea}
+        isLiveConnected={isLiveConnected}
+        onAddStation={onAddStation}
+      />
     </div>
   );
 }

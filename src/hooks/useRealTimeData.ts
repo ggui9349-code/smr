@@ -88,6 +88,28 @@ export function useRealTimeData() {
   const [lastSnapshotAt, setLastSnapshotAt] = useState<string>(new Date().toISOString());
   const previousTideRef = useRef<number>(0);
 
+  const addStationToArea = (areaId: string) => {
+    setAreas((prev) =>
+      prev.map((area) => {
+        if (area.id !== areaId) return area;
+
+        const nextIndex = area.stations.length + 1;
+        const newStation = {
+          id: `${area.id}-st-${Date.now()}`,
+          name: `Estação ${nextIndex}`,
+          capacity: 100,
+          currentUsage: 0,
+          status: 'online' as const,
+        };
+
+        return {
+          ...area,
+          stations: [...area.stations, newStation],
+        };
+      })
+    );
+  };
+
   const globalStatus = useMemo<RiskLevel>(() => {
     if (!areas.length) return RiskLevel.SAFE;
     return areas.reduce((highest, area) => {
@@ -109,6 +131,10 @@ export function useRealTimeData() {
     const source = new EventSource(STREAM_URL);
     eventSourceRef.current = source;
 
+    source.onopen = () => {
+      setIsLiveConnected(true);
+    };
+
     source.onmessage = (event) => {
       try {
         const payload = JSON.parse(event.data) as {
@@ -123,7 +149,6 @@ export function useRealTimeData() {
         const tideMeters = payload.tideMeters ?? 0;
         const generatedAt = payload.generatedAt ?? new Date().toISOString();
 
-        setIsLiveConnected(liveSignals.length > 0);
         const signalMap = buildAreaSignalMap(liveSignals);
 
         setAreas((prev) => {
@@ -196,5 +221,6 @@ export function useRealTimeData() {
     setTimeOffset,
     decisionMode,
     setDecisionMode,
+    addStationToArea,
   };
 }

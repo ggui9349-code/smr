@@ -17,6 +17,7 @@ export default function App() {
     setIsSimulating,
     decisionMode,
     setDecisionMode,
+    addStationToArea,
   } = useRealTimeData();
 
   return (
@@ -44,6 +45,7 @@ export default function App() {
           confidence={confidence}
           globalRiskScore={globalRiskScore}
           isLiveConnected={isLiveConnected}
+          onAddStation={addStationToArea}
         />
       )}
     </div>

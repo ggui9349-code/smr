@@ -42,6 +42,18 @@ const getRiskColor = (level: RiskLevel) => {
   }
 };
 
+const getInfraColor = (assignedTeams: number) => {
+  if (assignedTeams >= 4) return '#22c55e';
+  if (assignedTeams >= 2) return '#eab308';
+  return '#ef4444';
+};
+
+const getTideColor = (trend: MonitoringArea['trend']) => {
+  if (trend === 'rising') return '#ef4444';
+  if (trend === 'stable') return '#0ea5e9';
+  return '#22c55e';
+};
+
 export function MapComponent({ areas, onAreaSelect, focusedArea, focusNonce = 0 }: MapComponentProps) {
   const defaultCenter: [number, number] = [-8.054, -34.881];
   const center = focusedArea ? focusedArea.coordinates : defaultCenter;
@@ -65,29 +77,58 @@ export function MapComponent({ areas, onAreaSelect, focusedArea, focusNonce = 0 
         {areas.map((area) => {
           const isExtreme = area.riskLevel === RiskLevel.EXTREME;
           const isSelected = focusedArea?.id === area.id;
-          const color = getRiskColor(area.riskLevel);
-          
+
+          const color =
+            activeLayer === 'Risco'
+              ? getRiskColor(area.riskLevel)
+              : activeLayer === 'Infra'
+                ? getInfraColor(area.assignedTeams)
+                : getTideColor(area.trend);
+
+          const markerRadius =
+            activeLayer === 'Risco'
+              ? isSelected ? 14 : isExtreme ? 12 : 8
+              : activeLayer === 'Infra'
+                ? isSelected ? 15 : 10 + Math.min(6, area.assignedTeams)
+                : isSelected ? 15 : area.trend === 'rising' ? 13 : area.trend === 'stable' ? 10 : 8;
+
+          const haloRadius =
+            activeLayer === 'Risco'
+              ? 20 + (100 - area.confidence) / 2
+              : activeLayer === 'Infra'
+                ? 18 + area.assignedTeams * 2
+                : area.trend === 'rising' ? 24 : area.trend === 'stable' ? 20 : 16;
+
+          const layerLabel =
+            activeLayer === 'Risco'
+              ? area.riskLevel
+              : activeLayer === 'Infra'
+                ? `${area.assignedTeams} equipes`
+                : area.trend === 'rising'
+                  ? 'MARÉ SUBINDO'
+                  : area.trend === 'stable'
+                    ? 'MARÉ ESTÁVEL'
+                    : 'MARÉ BAIXANDO';
+
           return (
             <div key={area.id}>
-              {/* Confidence Halo */}
               <CircleMarker
                 center={area.coordinates}
-                radius={20 + (100 - area.confidence) / 2}
+                radius={haloRadius}
                 pathOptions={{
                   fillColor: color,
                   fillOpacity: 0.05,
                   color: color,
                   weight: 1,
                   dashArray: '5, 5',
-                  opacity: 0.1
+                  opacity: 0.2
                 }}
               />
 
-              {/* Interaction Ring */}
               {isSelected && (
                 <CircleMarker
                   center={area.coordinates}
-                  radius={25}
+                  radius={haloRadius + 5}
                   pathOptions={{
                     fillColor: 'transparent',
                     color: '#3b82f6',
@@ -98,10 +139,9 @@ export function MapComponent({ areas, onAreaSelect, focusedArea, focusNonce = 0 
                 />
               )}
 
-              {/* Main Indicator */}
               <CircleMarker
                 center={area.coordinates}
-                radius={isSelected ? 14 : isExtreme ? 12 : 8}
+                radius={markerRadius}
                 pathOptions={{
                   fillColor: color,
                   fillOpacity: 1,
@@ -118,7 +158,7 @@ export function MapComponent({ areas, onAreaSelect, focusedArea, focusNonce = 0 
                       <p className={cn(
                         "text-[8px] font-bold uppercase mt-0.5",
                         area.riskLevel === RiskLevel.EXTREME ? "text-red-400" : "text-gray-400"
-                      )}>{area.riskLevel}</p>
+                      )}>{layerLabel}</p>
                    </div>
                 </Tooltip>
               </CircleMarker>
