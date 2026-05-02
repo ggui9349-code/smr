@@ -64,7 +64,7 @@ export function DetailPanel({ area, onRequestMapFocus, inspectNonce = 0 }: Detai
         </div>
         <div className="flex justify-end pb-2 pr-2">
           <span className="rounded bg-blue-500/15 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-blue-200">
-            Fonte: Open-Meteo (tempo real) + IA Gemini (enriquecimento)
+            Fonte: API ao vivo configurada + IA Gemini (enriquecimento)
           </span>
         </div>
       </div>

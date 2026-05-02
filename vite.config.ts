@@ -8,19 +8,33 @@ const STREAM_PATH = '/api/realtime-signals';
 const AI_SEARCH_PATH = '/api/ai-citizen-search';
 const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
-async function fetchRealtimeObservation(previousRainMmPerHour = 0) {
-  const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-8.0476&longitude=-34.8770&current=rain&forecast_days=1');
+async function fetchRealtimeObservation(previousRainMmPerHour = 0, liveObservationApiUrl?: string) {
+  if (!liveObservationApiUrl) {
+    throw new Error('LIVE_OBSERVATION_API_URL não configurada');
+  }
+
+  const response = await fetch(liveObservationApiUrl);
   if (!response.ok) {
-    throw new Error('Falha ao consultar Open-Meteo');
+    throw new Error('Falha ao consultar API ao vivo');
   }
 
   const payload = (await response.json()) as {
     current?: {
       rain?: number;
     };
+    rain?: number;
+    rainMmPerHour?: number;
+    observedRainMmPerHour?: number;
   };
 
-  const observedRainMmPerHour = Math.max(0, Number(payload.current?.rain ?? 0));
+  const rainFromApi =
+    payload.observedRainMmPerHour ??
+    payload.rainMmPerHour ??
+    payload.rain ??
+    payload.current?.rain ??
+    0;
+
+  const observedRainMmPerHour = Math.max(0, Number(rainFromApi));
   const diff = observedRainMmPerHour - previousRainMmPerHour;
   const trend: 'rising' | 'stable' | 'falling' = diff > 0.2 ? 'rising' : diff < -0.2 ? 'falling' : 'stable';
 
@@ -33,6 +47,7 @@ async function fetchRealtimeObservation(previousRainMmPerHour = 0) {
 
 export default defineConfig(async ({mode}) => {
   const env = loadEnv(mode, '.', '');
+  const liveObservationApiUrl = env.LIVE_OBSERVATION_API_URL;
   const { INITIAL_AREAS } = await import('./src/data/initialAreas');
 
   return {
@@ -121,7 +136,7 @@ export default defineConfig(async ({mode}) => {
 
             const emit = async () => {
               try {
-                const observation = await fetchRealtimeObservation(previousRainMmPerHour);
+                const observation = await fetchRealtimeObservation(previousRainMmPerHour, liveObservationApiUrl);
                 previousRainMmPerHour = observation.observedRainMmPerHour;
                 const payload = buildLiveSignalPayload(INITIAL_AREAS, observation);
                 res.write(`data: ${JSON.stringify(payload)}\n\n`);

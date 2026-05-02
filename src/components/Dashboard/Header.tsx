@@ -106,7 +106,7 @@ export function Header({
                <p className="text-[9px] font-black uppercase text-gray-400 mb-2 border-b border-white/10 pb-1">Detalhamento por Fonte</p>
                <div className="space-y-2">
                  <ConfidenceItem label="IA (Gemini)" value={100} />
-                 <ConfidenceItem label="Open-Meteo" value={100} />
+                 <ConfidenceItem label="API ao vivo" value={100} />
                  <ConfidenceItem label="Motor de risco" value={100} />
                </div>
             </div>
