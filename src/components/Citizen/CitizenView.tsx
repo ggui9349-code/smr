@@ -406,6 +406,11 @@ export function CitizenView({ areas }: CitizenViewProps) {
                <button className="text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-blue-300">Editar Alertas</button>
             </div>
          </div>
+
+        <div className="rounded-2xl border border-blue-100 bg-blue-50/60 px-5 py-4 text-center">
+          <p className="text-[10px] font-black uppercase tracking-widest text-blue-700">Fontes em uso</p>
+          <p className="mt-1 text-xs font-bold text-blue-900">Dados ao vivo: Open-Meteo | Enriquecimento de busca: IA Gemini | Classificação final: motor de risco SIMA-RMR</p>
+        </div>
       </div>
     </div>
   );

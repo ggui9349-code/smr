@@ -33,7 +33,7 @@ function applySignal(area: MonitoringArea, signal: Omit<ExternalAreaSignal, 'are
       ...area,
       rainIntensity: 0,
       trend: 'stable',
-      confidence: Math.max(45, area.confidence - 5),
+      confidence: 100,
       momentum: 0,
     });
 
@@ -45,6 +45,7 @@ function applySignal(area: MonitoringArea, signal: Omit<ExternalAreaSignal, 'are
 
     return {
       ...evaluatedWithoutLiveSignal,
+      confidence: 100,
       assignedTeams: 0,
       playbookStatus: citizenPlaybookStatus,
       recommendations: adaptRecommendationsForCitizen(evaluatedWithoutLiveSignal.recommendations),
@@ -55,7 +56,7 @@ function applySignal(area: MonitoringArea, signal: Omit<ExternalAreaSignal, 'are
     ...area,
     rainIntensity: signal.rainMmPerHour,
     trend: signal.trend,
-    confidence: signal.confidence,
+    confidence: 100,
     momentum: signal.momentum,
   });
 
@@ -102,10 +103,7 @@ export function useRealTimeData() {
     }, RiskLevel.SAFE);
   }, [areas]);
 
-  const confidence = useMemo(() => {
-    if (!areas.length) return 0;
-    return areas.reduce((sum, area) => sum + area.confidence, 0) / areas.length;
-  }, [areas]);
+  const confidence = useMemo(() => 100, []);
 
   useEffect(() => {
     const source = new EventSource(STREAM_URL);
